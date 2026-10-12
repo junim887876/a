@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Barbearia Junim - Status ao Vivo</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Manifesto PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- OneSignal Web SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "0df84a25-d880-41a7-a996-98032866b806",
+          safari_web_id: "",
+          notifyButton: { enable: true },
+          allowLocalhostAsSecureOrigin: true,
+        });
+      });
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .image-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            filter: brightness(0.55) contrast(1.15);
+        }
+
+        .glass-card {
+            background: rgba(10, 10, 10, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            transition: all 0.5s ease;
+        }
+
+        .fade-transition {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="text-white min-h-[100svh] w-screen flex flex-col items-center justify-center p-2 sm:p-4 relative">
+
+    <img src="fundo.jpg" alt="Fundo Barbearia" class="image-bg">
+
+    <div id="main-card" class="glass-card w-full max-w-sm rounded-[2rem] p-5 sm:p-6 text-center flex flex-col items-center justify-center relative overflow-hidden flex-grow-0 mb-4 mt-2">
+        
+        <div class="mb-4 flex flex-col items-center w-full">
+            <div class="bg-white/10 p-3 rounded-full mb-2 backdrop-blur-md border border-white/5 shadow-lg">
+                <i class="ph ph-scissors text-3xl text-gray-200"></i>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-widest uppercase text-white drop-shadow-md">
+                Barbearia<br>
+                <span class="text-emerald-400 font-black text-2xl sm:text-3xl mt-1 block">Junim</span>
+            </h1>
+            <div class="h-1 w-16 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600 rounded mt-3 opacity-80"></div>
+        </div>
+
+        <!-- ESTADO: ABERTO / TRABALHO -->
+        <div id="state-open" class="w-full fade-transition flex flex-col items-center">
+            <h2 class="text-xs sm:text-sm text-gray-300 font-semibold mb-2 uppercase tracking-widest drop-shadow-md">Fila Atual</h2>
+            <div class="bg-black/50 border border-white/20 rounded-3xl w-full py-4 my-2 shadow-inner backdrop-blur-sm">
+                <div class="text-6xl sm:text-7xl leading-none font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" id="contador-clientes">0</div>
+                <p class="text-gray-300 text-[10px] sm:text-xs mt-2 uppercase tracking-wider font-bold">Clientes Aguardando</p>
+            </div>
+        </div>
+
+        <!-- ESTADO: ALMOÇO (Oculto por padrão) -->
+        <div id="state-lunch" class="w-full fade-transition hidden flex-col items-center">
+            <div class="bg-orange-500/30 p-4 rounded-full mb-3 border border-orange-500/40 backdrop-blur-sm">
+                <i class="ph ph-hamburger text-5xl text-orange-400 animate-bounce drop-shadow-md"></i>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-wide drop-shadow-md">Pausa para Almoço</h2>
+            <p class="text-xs sm:text-sm text-white font-medium px-2 drop-shadow-md">Nossa equipe está recarregando as energias.</p>
+            <p class="text-xs sm:text-sm text-orange-300 font-bold mt-3 bg-black/40 px-4 py-2 rounded-lg border border-orange-500/30">Voltamos em breve!</p>
+        </div>
+
+        <!-- BOTÃO DE ALERTA -->
+        <div class="w-full mt-3 pt-3 border-t border-white/10 flex flex-col items-center z-20">
+            <button onclick="abrirModalAlerta()" class="w-full bg-emerald-600/80 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl backdrop-blur-md border border-emerald-400/30 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
+                <i class="ph ph-bell-ringing text-sm"></i> Me avise quando liberar a fila
+            </button>
+        </div>
+    </div>
+
+    <!-- RELÓGIO E DATA ATUALIZADOS -->
+    <div class="mt-auto mb-2 text-center bg-black/30 px-6 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
+        <div id="relogio" class="text-3xl sm:text-4xl font-black text-white tracking-widest drop-shadow-lg">00:00</div>
+        <div id="data-atual" class="text-[9px] sm:text-[10px] text-gray-300 font-bold uppercase mt-1 tracking-[0.2em] drop-shadow-md">--</div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÃO DE ALERTA -->
+    <div id="modal-alerta" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-xs rounded-3xl p-5 flex flex-col items-center text-center border border-white/20 relative">
+            <button onclick="fecharModalAlerta()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="bg-emerald-500/20 p-3 rounded-full mb-3 border border-emerald-500/30">
+                <i class="ph ph-bell-simple-ringing text-3xl text-emerald-400"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">Configurar Alerta</h3>
+            <p class="text-[11px] text-gray-300 mb-4">Cadastre-se para receber aviso no OneSignal:</p>
+            
+            <div class="w-full flex flex-col gap-3 text-left">
+                <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
+                    Seu Nome / Contato:
+                    <input type="text" id="input-nome-cliente" placeholder="Ex: João Silva" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
+                </label>
+
+                <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
+                    Avisar quando a fila for menor ou igual a:
+                    <select id="filtro-clientes" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
+                        <option value="0">Fila zerada (0 clientes)</option>
+                        <option value="1" selected>Até 1 cliente</option>
+                        <option value="2">Até 2 clientes</option>
+                        <option value="3">Até 3 clientes</option>
+                    </select>
+                </label>
+
+                <label class="flex items-center gap-2 text-xs text-gray-200 font-medium mt-1 cursor-pointer">
+                    <input type="checkbox" id="filtro-almoco" class="rounded accent-emerald-500 w-4 h-4" checked>
+                    Avisar ao sair do horário de almoço
+                </label>
+            </div>
+
+            <button onclick="salvarAlertaPlanilha()" class="w-full mt-5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-3 rounded-xl transition-all shadow-lg">
+                Salvar na Aba "log"
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7qDJ1W8rsqIg-2iqFvNbPi32FB6FvMyiGwMceChlPruLVKRlXxbF_891eAAxFnNHX/exec";
+
+        async function abrirModalAlerta() {
+            window.OneSignalDeferred.push(async function(OneSignal) {
+                await OneSignal.Notifications.requestPermission();
+            });
+            document.getElementById('modal-alerta').classList.remove('hidden');
+        }
+
+        function fecharModalAlerta() {
+            document.getElementById('modal-alerta').classList.add('hidden');
+        }
+
+        async function buscarStatusPlanilha() {
+            try {
+                const response = await fetch(WEB_APP_URL + "?action=getStatus", { cache: "no-store" });
+                const data = await response.json();
+                
+                const statusA2 = String(data.status || "").trim().toLowerCase();
+                const qtdB2 = parseInt(data.quantidade || 0);
+
+                atualizarInterface(statusA2, qtdB2);
+            } catch (e) {
+                console.error("Erro ao buscar dados da planilha:", e);
+            }
+        }
+
+        function atualizarInterface(status, quantidade) {
+            const stateOpen = document.getElementById('state-open');
+            const stateLunch = document.getElementById('state-lunch');
+            const contador = document.getElementById('contador-clientes');
+
+            contador.innerText = isNaN(quantidade) ? 0 : quantidade;
+
+            if (status.includes("almoc") || status.includes("almoço")) {
+                stateOpen.classList.add('hidden');
+                stateOpen.classList.remove('flex');
+                stateLunch.classList.remove('hidden');
+                stateLunch.classList.add('flex');
+            } else {
+                stateLunch.classList.add('hidden');
+                stateLunch.classList.remove('flex');
+                stateOpen.classList.remove('hidden');
+                stateOpen.classList.add('flex');
+            }
+        }
+
+        async function salvarAlertaPlanilha() {
+            const nome = document.getElementById('input-nome-cliente').value.trim();
+            const maxClientes = document.getElementById('filtro-clientes').value;
+            const avisarAlmoco = document.getElementById('filtro-almoco').checked ? "Sim" : "Não";
+
+            if (!nome) {
+                alert("Por favor, preencha seu nome.");
+                return;
+            }
+
+            let oneSignalId = "";
+            try {
+                window.OneSignalDeferred.push(async function(OneSignal) {
+                    oneSignalId = await OneSignal.User.PushSubscription.id || "Não registrado";
+                });
+            } catch(e) { }
+
+            const dadosLog = {
+                action: "salvarLog",
+                nome: nome,
+                maxClientes: maxClientes,
+                avisarAlmoco: avisarAlmoco,
+                pushId: oneSignalId,
+                dataHora: new Date().toLocaleString()
+            };
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify(dadosLog)
+                });
+                alert("Alerta cadastrado com sucesso! Seus dados foram salvos na aba 'log'.");
+                fecharModalAlerta();
+            } catch (e) {
+                alert("Erro ao salvar dados. Verifique a conexão.");
+            }
+        }
+
+        // Relógio e Data em tempo real
+        setInterval(() => {
+            const agora = new Date();
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            document.getElementById('relogio').innerText = `${horas}:${minutos}`;
+
+            const opcoesData = { weekday: 'short', day: '2-digit', month: 'short' };
+            document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR', opcoesData).toUpperCase();
+        }, 1000);
+
+        // Executa a busca imediatamente ao abrir a página
+        buscarStatusPlanilha();
+
+        // Atualização contínua a cada 3 segundos (muito mais rápido)
+        setInterval(buscarStatusPlanilha, 3000);
+    </script>
+</body>
+</html>
