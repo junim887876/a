@@ -2,11 +2,11 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Barbearia Junim - Status ao Vivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Barbearia Junim</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <!-- Manifesto PWA -->
@@ -27,137 +27,262 @@
     </script>
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            overflow: hidden;
-            background-color: #050505;
+        * {
+            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
 
-        .image-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1;
-            object-fit: cover;
-            filter: brightness(0.55) contrast(1.15);
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            background: radial-gradient(circle at top, #1a1a1a 0%, #080808 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            overflow-x: hidden;
         }
 
         .glass-card {
-            background: rgba(10, 10, 10, 0.55);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
-            transition: all 0.5s ease;
+            background: rgba(18, 18, 20, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 15px rgba(16, 185, 129, 0.05);
+        }
+
+        .barber-pole-stripes {
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(239, 68, 68, 0.15),
+                rgba(239, 68, 68, 0.15) 10px,
+                rgba(255, 255, 255, 0.15) 10px,
+                rgba(255, 255, 255, 0.15) 20px,
+                rgba(59, 130, 246, 0.15) 20px,
+                rgba(59, 130, 246, 0.15) 30px
+            );
+        }
+
+        /* Switch tipo iOS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #10b981;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
         }
 
         .fade-transition {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s ease-in-out;
         }
     </style>
 </head>
-<body class="text-white min-h-[100svh] w-screen flex flex-col items-center justify-center p-2 sm:p-4 relative">
+<body class="flex flex-col items-center justify-between p-3 sm:p-5 w-screen overflow-y-auto">
 
-    <img src="logo_nova.jpg" alt="Fundo Barbearia" class="image-bg" onerror="this.src='fundo.jpg'">
+    <!-- CABEÇALHO DO APP (COM RELÓGIO EM DESTAQUE) -->
+    <header class="w-full max-w-sm flex items-center justify-between mb-3 px-2">
+        <div class="flex items-center gap-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400">Ao Vivo</span>
+        </div>
+        <div class="text-right">
+            <div id="relogio" class="text-2xl sm:text-3xl font-black text-white tracking-wider font-mono leading-none drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">00:00</div>
+            <div id="data-atual" class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">--</div>
+        </div>
+    </header>
 
-    <div id="main-card" class="glass-card w-full max-w-sm rounded-[2rem] p-5 sm:p-6 text-center flex flex-col items-center justify-center relative overflow-hidden flex-grow-0 mb-4 mt-2">
-        
-        <div class="mb-4 flex flex-col items-center w-full">
-            <div class="bg-white/10 p-3 rounded-full mb-2 backdrop-blur-md border border-white/5 shadow-lg">
-                <i class="ph ph-scissors text-3xl text-gray-200"></i>
+    <!-- CARD PRINCIPAL DE STATUS -->
+    <main id="main-card" class="glass-card w-full max-w-sm rounded-3xl p-5 text-center flex flex-col items-center relative overflow-hidden mb-3">
+        <div class="absolute top-0 left-0 right-0 h-1 barber-pole-stripes"></div>
+
+        <div class="my-2 flex flex-col items-center w-full">
+            <div class="bg-emerald-500/10 p-3 rounded-2xl mb-2 border border-emerald-500/20 shadow-inner">
+                <i class="ph ph-scissors text-3xl text-emerald-400"></i>
             </div>
-            <h1 class="text-xl sm:text-2xl font-extrabold tracking-widest uppercase text-white drop-shadow-md">
-                Barbearia<br>
-                <span class="text-emerald-400 font-black text-2xl sm:text-3xl mt-1 block">Junim</span>
+            <h1 class="text-lg font-black tracking-widest uppercase text-white">
+                Barbearia <span class="text-emerald-400">Junim</span>
             </h1>
-            <div class="h-1 w-16 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600 rounded mt-3 opacity-80"></div>
         </div>
 
         <!-- ESTADO: ABERTO / TRABALHO -->
         <div id="state-open" class="w-full fade-transition flex flex-col items-center">
-            <h2 class="text-xs sm:text-sm text-gray-300 font-semibold mb-2 uppercase tracking-widest drop-shadow-md">Fila Atual</h2>
-            <div class="bg-black/50 border border-white/20 rounded-3xl w-full py-4 my-2 shadow-inner backdrop-blur-sm">
-                <div class="text-6xl sm:text-7xl leading-none font-black text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" id="contador-clientes">0</div>
-                <p class="text-gray-300 text-[10px] sm:text-xs mt-2 uppercase tracking-wider font-bold">Clientes Aguardando</p>
+            <div class="bg-black/60 border border-white/10 rounded-2xl w-full py-4 my-2 shadow-2xl backdrop-blur-md">
+                <div class="text-6xl font-black text-white tracking-tight drop-shadow-[0_0_25px_rgba(16,185,129,0.3)]" id="contador-clientes">0</div>
+                <p class="text-gray-400 text-[10px] mt-1 uppercase tracking-widest font-bold">Clientes na Fila</p>
             </div>
         </div>
 
         <!-- ESTADO: ALMOÇO -->
-        <div id="state-lunch" class="w-full fade-transition hidden flex-col items-center">
-            <div class="bg-orange-500/30 p-4 rounded-full mb-3 border border-orange-500/40 backdrop-blur-sm">
-                <i class="ph ph-hamburger text-5xl text-orange-400 animate-bounce drop-shadow-md"></i>
+        <div id="state-lunch" class="w-full fade-transition hidden flex-col items-center py-2">
+            <div class="bg-orange-500/20 p-3 rounded-full mb-2 border border-orange-500/30">
+                <i class="ph ph-hamburger text-4xl text-orange-400 animate-bounce"></i>
             </div>
-            <h2 class="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-wide drop-shadow-md">Pausa para Almoço</h2>
-            <p class="text-xs sm:text-sm text-white font-medium px-2 drop-shadow-md">Nossa equipe está recarregando as energias.</p>
-            <p class="text-xs sm:text-sm text-orange-300 font-bold mt-3 bg-black/40 px-4 py-2 rounded-lg border border-orange-500/30">Voltamos em breve!</p>
+            <h2 class="text-lg font-bold text-white uppercase tracking-wider">Horário de Almoço</h2>
+            <p class="text-xs text-orange-300/80 font-medium mt-1">Retornaremos em breve!</p>
         </div>
 
         <!-- BOTÃO DE ALERTA -->
-        <div class="w-full mt-3 pt-3 border-t border-white/10 flex flex-col items-center z-20">
-            <button onclick="abrirModalAlerta()" class="w-full bg-emerald-600/80 hover:bg-emerald-500 text-white text-xs font-bold py-2.5 px-4 rounded-xl backdrop-blur-md border border-emerald-400/30 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
-                <i class="ph ph-bell-ringing text-sm"></i> Me avise quando liberar a fila
-            </button>
-        </div>
-    </div>
+        <button onclick="abrirModalAlerta()" class="w-full mt-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-extrabold py-3 px-4 rounded-xl shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all active:scale-95 border border-emerald-400/30">
+            <i class="ph ph-bell-ringing text-base"></i> Me avise quando liberar a fila
+        </button>
+    </main>
 
-    <!-- RELÓGIO E DATA -->
-    <div class="mt-auto mb-2 text-center bg-black/30 px-6 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
-        <div id="relogio" class="text-3xl sm:text-4xl font-black text-white tracking-widest drop-shadow-lg">00:00</div>
-        <div id="data-atual" class="text-[9px] sm:text-[10px] text-gray-300 font-bold uppercase mt-1 tracking-[0.2em] drop-shadow-md">--</div>
-    </div>
+    <!-- SLIDER DE ANÚNCIOS (A CADA 5S) -->
+    <section class="w-full max-w-sm rounded-2xl overflow-hidden glass-card p-1.5 mb-2 relative">
+        <div class="relative w-full aspect-[2/1] rounded-xl overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center" id="ad-container">
+            <!-- Renderizado dinamicamente via JS -->
+        </div>
+        <div class="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10 text-[8px] font-bold uppercase tracking-widest text-gray-400 pointer-events-none">
+            Anúncio
+        </div>
+    </section>
 
     <!-- MODAL DE CONFIGURAÇÃO DE ALERTA -->
-    <div id="modal-alerta" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-xs rounded-3xl p-5 flex flex-col items-center text-center border border-white/20 relative">
+    <div id="modal-alerta" class="hidden fixed inset-0 bg-black/85 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-xs rounded-3xl p-5 flex flex-col items-center text-center border border-white/15 relative">
             <button onclick="fecharModalAlerta()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
                 <i class="ph ph-x"></i>
             </button>
-            <div class="bg-emerald-500/20 p-3 rounded-full mb-3 border border-emerald-500/30">
+            
+            <div class="bg-emerald-500/20 p-3 rounded-2xl mb-2 border border-emerald-500/30">
                 <i class="ph ph-bell-simple-ringing text-3xl text-emerald-400"></i>
             </div>
-            <h3 class="text-base font-bold text-white mb-1">Configurar Alerta</h3>
-            <p class="text-[11px] text-gray-300 mb-4">Cadastre seu primeiro nome para o aviso:</p>
             
-            <div class="w-full flex flex-col gap-3 text-left">
-                <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
-                    Seu Primeiro Nome:
-                    <input type="text" id="input-nome-cliente" placeholder="Ex: Lucas" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
-                </label>
+            <h3 class="text-base font-extrabold text-white">Configurar Aviso</h3>
+            <p class="text-[11px] text-gray-400 mb-4">Receba uma notificação no seu celular</p>
+            
+            <div class="w-full flex flex-col gap-3.5 text-left">
+                <div>
+                    <label class="text-[11px] text-gray-300 font-bold block mb-1">Seu Primeiro Nome</label>
+                    <input type="text" id="input-nome-cliente" placeholder="Ex: Lucas" class="w-full bg-black/50 border border-white/15 rounded-xl p-2.5 text-white text-xs focus:outline-none focus:border-emerald-400 transition-colors">
+                </div>
 
-                <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
-                    Avisar quando a fila for menor ou igual a:
-                    <select id="filtro-clientes" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
-                        <option value="0">Fila zerada (0 clientes)</option>
-                        <option value="1" selected>Até 1 cliente</option>
-                        <option value="2">Até 2 clientes</option>
-                        <option value="3">Até 3 clientes</option>
+                <div>
+                    <label class="text-[11px] text-gray-300 font-bold block mb-1">Avisar quando a fila tiver até:</label>
+                    <select id="filtro-clientes" class="w-full bg-black/50 border border-white/15 rounded-xl p-2.5 text-white text-xs focus:outline-none focus:border-emerald-400 transition-colors">
+                        <option value="0">0 clientes (Fila Vazia)</option>
+                        <option value="1">1 cliente</option>
+                        <option value="2">2 clientes</option>
+                        <option value="3">3 clientes</option>
                     </select>
-                </label>
+                </div>
 
-                <label class="flex items-center gap-2 text-xs text-gray-200 font-medium mt-1 cursor-pointer">
-                    <input type="checkbox" id="filtro-almoco" class="rounded accent-emerald-500 w-4 h-4" checked>
-                    Avisar ao sair do horário de almoço
-                </label>
+                <!-- SWITCH DESMARCADO POR PADRÃO -->
+                <div class="flex items-center justify-between bg-black/30 p-2.5 rounded-xl border border-white/5">
+                    <span class="text-xs text-gray-200 font-semibold">Avisar saída do almoço</span>
+                    <label class="switch">
+                        <input type="checkbox" id="filtro-almoco">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
 
-            <button onclick="salvarAlertaPlanilha()" class="w-full mt-5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-3 rounded-xl transition-all shadow-lg">
-                Salvar Alerta
+            <button onclick="salvarAlertaPlanilha()" class="w-full mt-5 bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs py-3 rounded-xl transition-all shadow-lg shadow-emerald-950/50">
+                Salvar Configuração
             </button>
         </div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6Ku-9OD_Cw0N6WCAizviuY-037N7lFXahLcGE9YxdzaUEpl40V5L2YZ4iO2W0b13f/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw1ShRSGvek7UrGQq8Bdqg_YzONd1oCm-Esuvdwi26rLR658YuM4MvWUeahhr7QHIIB/exec";
+
+        // GERENCIADOR DE ANÚNCIOS (A CADA 5 SEGUNDOS)
+        const adsList = [];
+        let currentAdIndex = 0;
+
+        function inicializarAnuncios() {
+            let carregadas = 0;
+            const maxAds = 5;
+
+            for (let i = 1; i <= maxAds; i++) {
+                const img = new Image();
+                const src = `anuncio${i}.jpg`;
+                img.onload = () => {
+                    adsList.push({ type: 'image', src: src });
+                    carregadas++;
+                    if (carregadas === 1) renderizarAnuncioAtual();
+                };
+                img.onerror = () => {
+                    carregadas++;
+                    if (adsList.length === 0 && carregadas === maxAds) {
+                        renderizarAnuncioAtual();
+                    }
+                };
+                img.src = src;
+            }
+
+            setInterval(proximoAnuncio, 5000);
+        }
+
+        function renderizarAnuncioAtual() {
+            const container = document.getElementById('ad-container');
+
+            if (currentAdIndex < adsList.length) {
+                const ad = adsList[currentAdIndex];
+                container.innerHTML = `<img src="${ad.src}" alt="Anúncio" class="w-full h-full object-cover rounded-xl transition-opacity duration-500">`;
+            } else {
+                // Banner nativo "Anuncie Aqui"
+                container.innerHTML = `
+                    <a href="https://www.instagram.com/barber_junim" target="_blank" class="w-full h-full bg-gradient-to-br from-neutral-900 via-neutral-800 to-emerald-950/40 p-4 flex flex-col items-center justify-center text-center group cursor-pointer border border-emerald-500/20 rounded-xl transition-all">
+                        <div class="bg-emerald-500/20 p-2 rounded-full mb-1 group-hover:scale-110 transition-transform">
+                            <i class="ph ph-instagram-logo text-2xl text-emerald-400"></i>
+                        </div>
+                        <h4 class="text-xs font-black uppercase text-white tracking-wider">Anuncie Aqui</h4>
+                        <p class="text-[10px] text-emerald-400 font-bold mt-0.5 underline">Clique aqui e fale conosco</p>
+                    </a>
+                `;
+            }
+        }
+
+        function proximoAnuncio() {
+            const totalItems = adsList.length + 1;
+            currentAdIndex = (currentAdIndex + 1) % totalItems;
+            renderizarAnuncioAtual();
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             const nomeSalvo = localStorage.getItem('junim_primeiro_nome');
             if (nomeSalvo) {
                 document.getElementById('input-nome-cliente').value = nomeSalvo;
             }
+            inicializarAnuncios();
         });
 
         async function abrirModalAlerta() {
@@ -231,7 +356,6 @@
 
             localStorage.setItem('junim_primeiro_nome', primeiroNome);
 
-            // Obtém o token de notificação de forma assíncrona garantida
             let oneSignalId = await obterOneSignalIdGarantido();
 
             if (oneSignalId === "Não registrado") {
