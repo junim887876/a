@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Barbearia Junim - Status ao Vivo</title>
+    <title>Barbearia Junim</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -62,7 +62,7 @@
 </head>
 <body class="text-white min-h-[100svh] w-screen flex flex-col items-center justify-center p-2 sm:p-4 relative">
 
-    <img src="fundo.jpg" alt="Fundo Barbearia" class="image-bg">
+    <img src="logo_nova.jpg" alt="Fundo Barbearia" class="image-bg" onerror="this.src='fundo.jpg'">
 
     <div id="main-card" class="glass-card w-full max-w-sm rounded-[2rem] p-5 sm:p-6 text-center flex flex-col items-center justify-center relative overflow-hidden flex-grow-0 mb-4 mt-2">
         
@@ -120,12 +120,12 @@
                 <i class="ph ph-bell-simple-ringing text-3xl text-emerald-400"></i>
             </div>
             <h3 class="text-base font-bold text-white mb-1">Configurar Alerta</h3>
-            <p class="text-[11px] text-gray-300 mb-4">Cadastre-se para receber aviso no OneSignal:</p>
+            <p class="text-[11px] text-gray-300 mb-4">Cadastre seu primeiro nome para o aviso:</p>
             
             <div class="w-full flex flex-col gap-3 text-left">
                 <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
-                    Seu Nome / Contato:
-                    <input type="text" id="input-nome-cliente" placeholder="Ex: João Silva" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
+                    Seu Primeiro Nome:
+                    <input type="text" id="input-nome-cliente" placeholder="Ex: Lucas" class="bg-black/60 border border-white/20 rounded-xl p-2 text-white text-xs focus:outline-none focus:border-emerald-400">
                 </label>
 
                 <label class="text-xs text-gray-200 font-semibold flex flex-col gap-1">
@@ -145,13 +145,21 @@
             </div>
 
             <button onclick="salvarAlertaPlanilha()" class="w-full mt-5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs py-3 rounded-xl transition-all shadow-lg">
-                Salvar na Aba "log"
+                Salvar Alerta
             </button>
         </div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzhfKj2DQFUN9MOmZhXSL2RmXpESd82EKmfYsRe8NT0LhI02OVxwX1o32MP71a7Ylat/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7qDJ1W8rsqIg-2iqFvNbPi32FB6FvMyiGwMceChlPruLVKRlXxbF_891eAAxFnNHX/exec";
+
+        // Ao carregar a página, verifica se já existe um nome salvo no navegador
+        window.addEventListener('DOMContentLoaded', () => {
+            const nomeSalvo = localStorage.getItem('junim_primeiro_nome');
+            if (nomeSalvo) {
+                document.getElementById('input-nome-cliente').value = nomeSalvo;
+            }
+        });
 
         async function abrirModalAlerta() {
             window.OneSignalDeferred.push(async function(OneSignal) {
@@ -199,14 +207,17 @@
         }
 
         async function salvarAlertaPlanilha() {
-            const nome = document.getElementById('input-nome-cliente').value.trim();
-            const maxClientes = document.getElementById('filtro-clientes').value;
-            const avisarAlmoco = document.getElementById('filtro-almoco').checked ? "Sim" : "Não";
+            // Pega apenas o primeiro nome digitado
+            let nomeCompleto = document.getElementById('input-nome-cliente').value.trim();
+            let primeiroNome = nomeCompleto.split(' ')[0];
 
-            if (!nome) {
-                alert("Por favor, preencha seu nome.");
+            if (!primeiroNome) {
+                alert("Por favor, digite seu primeiro nome.");
                 return;
             }
+
+            // Salva na memória do navegador para lembrar nas próximas vezes
+            localStorage.setItem('junim_primeiro_nome', primeiroNome);
 
             let oneSignalId = "";
             try {
@@ -215,9 +226,12 @@
                 });
             } catch(e) { }
 
+            const maxClientes = document.getElementById('filtro-clientes').value;
+            const avisarAlmoco = document.getElementById('filtro-almoco').checked ? "Sim" : "Não";
+
             const dadosLog = {
                 action: "salvarLog",
-                nome: nome,
+                nome: primeiroNome,
                 maxClientes: maxClientes,
                 avisarAlmoco: avisarAlmoco,
                 pushId: oneSignalId,
@@ -229,7 +243,7 @@
                     method: "POST",
                     body: JSON.stringify(dadosLog)
                 });
-                alert("Alerta cadastrado com sucesso! Seus dados foram salvos na aba 'log'.");
+                alert("Tudo pronto, " + primeiroNome + "! Seu alerta foi salvo.");
                 fecharModalAlerta();
             } catch (e) {
                 alert("Erro ao salvar dados. Verifique a conexão.");
@@ -247,10 +261,7 @@
             document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR', opcoesData).toUpperCase();
         }, 1000);
 
-        // Executa a busca imediatamente ao abrir a página
         buscarStatusPlanilha();
-
-        // Atualização contínua a cada 3 segundos (muito mais rápido)
         setInterval(buscarStatusPlanilha, 3000);
     </script>
 </body>
