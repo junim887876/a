@@ -1,8 +1,15 @@
 {
   "short_name": "Junim",
   "name": "Barbearia Junim",
-  "icons": [],
-  "start_url": "/a/",
+  "icons": [
+    {
+      "src": "logo_nova.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/Clientes_agora/",
   "background_color": "#050505",
   "theme_color": "#050505",
   "display": "standalone"
