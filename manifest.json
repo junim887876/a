@@ -9,7 +9,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/Clientes_agora/",
+  "start_url": "/a/",
   "background_color": "#050505",
   "theme_color": "#050505",
   "display": "standalone"
