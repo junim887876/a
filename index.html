@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Barbearia JR</title>
+    <title>Barbearia Junim - Status ao Vivo</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <!-- ESTADO: ALMOÇO (Oculto por padrão) -->
+        <!-- ESTADO: ALMOÇO -->
         <div id="state-lunch" class="w-full fade-transition hidden flex-col items-center">
             <div class="bg-orange-500/30 p-4 rounded-full mb-3 border border-orange-500/40 backdrop-blur-sm">
                 <i class="ph ph-hamburger text-5xl text-orange-400 animate-bounce drop-shadow-md"></i>
@@ -104,7 +104,7 @@
         </div>
     </div>
 
-    <!-- RELÓGIO E DATA ATUALIZADOS -->
+    <!-- RELÓGIO E DATA -->
     <div class="mt-auto mb-2 text-center bg-black/30 px-6 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
         <div id="relogio" class="text-3xl sm:text-4xl font-black text-white tracking-widest drop-shadow-lg">00:00</div>
         <div id="data-atual" class="text-[9px] sm:text-[10px] text-gray-300 font-bold uppercase mt-1 tracking-[0.2em] drop-shadow-md">--</div>
@@ -151,9 +151,8 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxGlyuESuSUow-BkTaGSmUmzVv7Ka_2rljY6kQ3GIcwPZbihRJjypn_op7ZfC3-2N8/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6Ku-9OD_Cw0N6WCAizviuY-037N7lFXahLcGE9YxdzaUEpl40V5L2YZ4iO2W0b13f/exec";
 
-        // Ao carregar a página, verifica se já existe um nome salvo no navegador
         window.addEventListener('DOMContentLoaded', () => {
             const nomeSalvo = localStorage.getItem('junim_primeiro_nome');
             if (nomeSalvo) {
@@ -162,9 +161,11 @@
         });
 
         async function abrirModalAlerta() {
-            window.OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.Notifications.requestPermission();
-            });
+            try {
+                window.OneSignalDeferred.push(async function(OneSignal) {
+                    await OneSignal.Notifications.requestPermission();
+                });
+            } catch(e) {}
             document.getElementById('modal-alerta').classList.remove('hidden');
         }
 
@@ -206,8 +207,20 @@
             }
         }
 
+        async function obterOneSignalIdGarantido() {
+            return new Promise((resolve) => {
+                try {
+                    window.OneSignalDeferred.push(async function(OneSignal) {
+                        let id = await OneSignal.User.PushSubscription.id;
+                        resolve(id || "Não registrado");
+                    });
+                } catch(e) {
+                    resolve("Não registrado");
+                }
+            });
+        }
+
         async function salvarAlertaPlanilha() {
-            // Pega apenas o primeiro nome digitado
             let nomeCompleto = document.getElementById('input-nome-cliente').value.trim();
             let primeiroNome = nomeCompleto.split(' ')[0];
 
@@ -216,15 +229,14 @@
                 return;
             }
 
-            // Salva na memória do navegador para lembrar nas próximas vezes
             localStorage.setItem('junim_primeiro_nome', primeiroNome);
 
-            let oneSignalId = "";
-            try {
-                window.OneSignalDeferred.push(async function(OneSignal) {
-                    oneSignalId = await OneSignal.User.PushSubscription.id || "Não registrado";
-                });
-            } catch(e) { }
+            // Obtém o token de notificação de forma assíncrona garantida
+            let oneSignalId = await obterOneSignalIdGarantido();
+
+            if (oneSignalId === "Não registrado") {
+                alert("Aviso: Permita as notificações no seu navegador para receber os alertas!");
+            }
 
             const maxClientes = document.getElementById('filtro-clientes').value;
             const avisarAlmoco = document.getElementById('filtro-almoco').checked ? "Sim" : "Não";
